@@ -1,11 +1,7 @@
-mutation createAddress {
-  createAddress(input: {line1: "2815 W Pleasanton", line2: "Apt B", zip: "83702", city: "Boise", state: "ID", employeeId: 1}) {
-    id
-  }
-}
+## Address query and mutation examples
 
-mutation createEmployee {
-  createEmployee(input: {firstName: "Ben", lastName: "McAvoy", email: "mcavoybn@gmail.com", phoneNumber: "2088611739", companyRole: "Software Developer"}) {
+mutation createAddress {
+  createAddress(input: {line1: "2815 W Pleasanton", line2: "Apt B", zip: "83702", city: "Boise", state: "ID", employeeId: 12}) {
     id
   }
 }
@@ -20,29 +16,24 @@ query retreiveAddress {
   }
 }
 
-query retreiveEmployee {
-  getEmployee(id: 0) {
-    id
-    firstName
-    lastName
-    email
-    phoneNumber
-    companyRole
-  }
-}
-
-query retreiveAllEmployees {
-  getEmployee {
-    id
-    firstName
-    email
-    phoneNumber
-    companyRole
-  }
-}
-
+# querying getAddress without an id will return all addresses
 query retreiveAllAddresses {
   getAddress {
+    line1
+    line2
+    zip
+    city
+    state
+    employeeId
+  }
+}
+
+# search for an address based of one of its field values
+# search is NOT case-sensitive
+query findAddress {
+  findAddress(input:{
+    employeeId: 19
+  }) {
     line1
     line2
     zip
@@ -58,14 +49,60 @@ mutation updateAddress {
   }
 }
 
-mutation updateEmployee {
-  updateEmployee(id: 1, input:{firstName: "Jeb", lastName: "McElroy", email: "mcelroyjr@gmail.com", phoneNumber: "2085553825", companyRole: "Drill Sergant"}) {
+# deleteAddress responds true on deletion success and false on failure
+mutation deleteAddress {
+  deleteAddress(id: 153)
+}
+
+
+## Employee query and mutation examples
+mutation createEmployee {
+  createEmployee(input: {firstName: "Ben", lastName: "McAvoy", email: "mcavoybn@gmail.com", phoneNumber: "2088611739", companyRole: "Software Developer"}) {
     id
   }
 }
 
-mutation deleteAddress {
-  deleteAddress(id: 153)
+query retreiveEmployee {
+  getEmployee(id: 0) {
+    id
+    firstName
+    lastName
+    email
+    phoneNumber
+    companyRole
+  }
+}
+
+#querying getEmployee without an id will return all employees
+query retreiveAllEmployees {
+  getEmployee {
+    id
+    firstName
+    email
+    phoneNumber
+    companyRole
+  }
+}
+
+# search for an employee based of one of its field values
+# search is NOT case-sensitive
+query findEmployee {
+  findEmployee(input:{
+    firstName: "E"
+  }) {
+    id
+    firstName
+    lastName
+    email
+    phoneNumber
+  }
+}
+
+
+mutation updateEmployee {
+  updateEmployee(id: 12, input:{firstName: "Jeb", lastName: "McElroy", email: "mcelroyjr@gmail.com", phoneNumber: "2085553825", companyRole: "Drill Sergant"}) {
+    id
+  }
 }
 
 mutation deleteEmployee {

@@ -1,3 +1,6 @@
+-- Node.js requires that you use the older v5/v6 authentication method in mysql.
+-- This snippet will convert the authentication method of the root user to the legacy version in case
+-- you set up your mysql server with the v8 authentication scheme and are unable to connect.
 -- use mysql;
 -- update user set authentication_string=password(''), plugin='mysql_native_password' where user='root';
 
@@ -12,8 +15,6 @@ CREATE TABLE employee (
   phoneNumber VARCHAR(15),
   companyRole VARCHAR(50)
 );
-
-UPDATE address SET line1 = "foobar", line2 = "foobaz" WHERE address.id = 1;
 
 CREATE TABLE address (
   id INTEGER PRIMARY KEY AUTO_INCREMENT,  
