@@ -1,0 +1,40 @@
+mutation createAddress {
+  createAddress(input: {
+    line1: "2815 W Pleasanton"
+    line2: "Apt B"
+    zip: "83702"
+    city: "Boise"
+    state: "ID"
+  }) {
+    id
+  }
+}
+
+mutation createUser {
+  createUser(input: {
+    firstName: "Ben"
+    lastName: "McAvoy"
+    email: "mcavoybn@gmail.com"
+    phoneNumber: "2088611739"
+    role: "Software Developer"
+  }) {
+    id
+  }
+}
+
+query retreiveAddress { getAddress( id: "0" ) {
+  line1
+  line2
+  zip
+  city
+  state
+} }
+
+query retreiveUser { getUser( id: "0" ) {
+  id
+  firstName
+  lastName
+  email
+  phoneNumber
+  role
+} }
