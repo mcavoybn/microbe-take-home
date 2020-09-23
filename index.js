@@ -1,11 +1,11 @@
-//igraphql will not work without this polyfill
+//graphiql client will not work without this polyfill
 require('url-search-params-polyfill');
 var express = require('express');
 var { graphqlHTTP } = require('express-graphql');
 var { buildSchema } = require('graphql');
+var mysqlWrapper = require('./mysqlWrapper');
 
-// TODO replace with mysql connection
-var fakeDatabase = {};
+var dbConnection = mysqlWrapper.connect(require('./dbConfig'));
 
 // Construct a schema, using GraphQL schema language
 var schema = buildSchema(`
@@ -14,7 +14,8 @@ var schema = buildSchema(`
     line2: String
     city: String
     state: String
-    zip: String
+	zip: String
+	employeeId: Int
   }
 
   input EmployeeInput {
@@ -31,7 +32,8 @@ var schema = buildSchema(`
     line2: String
     city: String
     state: String
-    zip: String
+	zip: String
+	employeeId: Int
   }
 
   type Employee {
@@ -44,8 +46,8 @@ var schema = buildSchema(`
   }
   
   type Query {
-    getAddress(id: ID!): Address
-    getEmployee(id: ID!): Employee
+    getAddress(id: ID): [Address]
+    getEmployee(id: ID): [Employee],
   }
   
   type Mutation {
@@ -59,13 +61,14 @@ var schema = buildSchema(`
 `);
 
 class Address {
-    constructor(id, {line1, line2, city, state, zip}) {
+    constructor(id, {line1, line2, city, state, zip, employeeId}) {
       this.id = id;
       this.line1 = line1;
       this.line2 = line2;
       this.city = city;
       this.state = state;
-      this.zip = zip;      
+	  this.zip = zip;   
+	  this.employeeId = employeeId;   
     }
 }
 
@@ -81,69 +84,77 @@ class Employee {
 }
 
 // The root provides a resolver function for each API endpoint
-var addrCount = 0;
-var EmployeeCount = 0;
 var root = {
-    // addres CRUD operations
-    getAddress: ({id}) => {
-        if (!fakeDatabase[id]) {
-            throw new Error('no address exists with id ' + id);
-        }
-        return new Address(id, fakeDatabase[id]);
+    getAddress: async ({id}) => {
+        if (!id) {
+			var queryString = `SELECT * FROM address;`;
+			var result = await dbConnection.query(queryString);
+            return result.map(address => new Address(address.id, address));
+        } else {
+			var queryString = `SELECT * FROM address WHERE address.id = ${id};`;
+			var result = await dbConnection.query(queryString);
+			if (result.length == 0) throw `0 address rows with id ${id} found`;
+            return [new Address(result[0].id, result[0])];
+		}        
     },
-    createAddress: ({input}) => {
-        // Create a random id for our "database".
-        var id = addrCount;
-        addrCount += 1;
-
-        fakeDatabase[id] = input;
-        return new Address(id, input);
+    createAddress: async ({input}) => {
+		const {line1, line2, city, state, zip, employeeId} = input;
+		var queryString = `
+		insert into address (line1, line2, city, state, zip, employeeId) \
+		values ('${line1}', '${line2}', '${city}', '${state}', '${zip}', ${employeeId});
+		`;
+		var result = await dbConnection.query(queryString);
+		return new Address(result.insertId, input);
     },
-    updateAddress: ({id, input}) => {
-        if (!fakeDatabase[id]) {
-            throw new Error('no address exists with id ' + id);
-        }
-        // This replaces all old data, but some apps might want partial update.
-        fakeDatabase[id] = input;
-        return new Address(id, input);
+    updateAddress: async ({id, input}) => {
+		var queryString = `UPDATE address SET `;
+		Object.keys(input).forEach((key, idx) => {			
+			queryString += `${idx > 0 ? "," : ""} ${key} = '${input[key]}'`;			
+		});
+		queryString += ` WHERE address.id = ${id}`;
+		await dbConnection.query(queryString);
+		return new Address(id, input);
     },
-    deleteAddress: ({id, input}) => {
-        if (!fakeDatabase[id]) {
-            throw new Error('no address exists with id ' + id);
-        }
-        // This replaces all old data, but some apps might want partial update.
-        delete fakeDatabase[id];
-        return new Address(id, input);
+    deleteAddress: async ({id, input}) => {
+		var queryString = `DELETE FROM address WHERE address.id = ${id} `;
+		var result = await dbConnection.query(queryString);
+		return result.affectedRows == 1;
     },
-    // Employee CRUD operations
-    getEmployee: ({id}) => {
-        if (!fakeDatabase[id]) {
-            throw new Error('no Employee exists with id ' + id);
-        }
-        return new Employee(id, fakeDatabase[id]);
+    getEmployee: async ({id}) => {
+        if (!id) {
+			var queryString = `SELECT * FROM employee;`;
+			var result = await dbConnection.query(queryString);
+            return result.map(address => new Employee(address.id, address));
+        } else {
+			var queryString = `SELECT * FROM employee WHERE employee.id = ${id};`;
+			var result = await dbConnection.query(queryString);
+			if (result.length == 0) throw `0 employee rows with id ${id} found`;
+            return [new Employee(id, result[0])];
+		} 
     },
-    createEmployee: ({input}) => {
-        // Create a random id for our "database".
-        var id = EmployeeCount;
-        EmployeeCount += 1;
-
-        fakeDatabase[id] = input;
-        return new Employee(id, input);
+    createEmployee: async ({input}) => {
+		const {firstName, lastName, email, phoneNumber, companyRole} = input;
+        var queryString = `
+		insert into employee (firstName, lastName, email, phoneNumber, companyRole) \
+		values ('${firstName}', '${lastName}', '${email}', '${phoneNumber}', '${companyRole}')`;
+		var result = await dbConnection.query(queryString);
+		return new Employee(result.insertId, input);
     },
-    updateEmployee: ({id, input}) => {
-        if (!fakeDatabase[id]) {
-            throw new Error('no Employee exists with id ' + id);
-        }
-        // This replaces all old data, but some apps might want partial update.
-        fakeDatabase[id] = input;
-        return new Employee(id, input);
+    updateEmployee: async ({id, input}) => {
+        var queryString = `UPDATE employee SET `;
+		Object.keys(input).forEach((key, idx) => {			
+			queryString += `${idx > 0 ? "," : ""} ${key} = '${input[key]}'`;			
+		});
+		queryString += ` WHERE employee.id = ${id}`;
+		await dbConnection.query(queryString);
+		return new Address(id, input);
     },
-    deleteEmployee: ({id, input}) => {
-        if (!fakeDatabase[id]) {
-            throw new Error('no Employee exists with id ' + id);
-        }
-        delete fakeDatabase[id];
-        return new Employee(id, input);
+    deleteEmployee: async ({id, input}) => {
+		var queryString = `DELETE FROM address WHERE address.employeeId = ${id}`;
+		await dbConnection.query(queryString);
+        var queryString = `DELETE FROM employee WHERE employee.id = ${id}`;
+		var result = await dbConnection.query(queryString);
+		return result.affectedRows == 1;
     },
 };
 

@@ -5,14 +5,15 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "run": "node ."
+    "start": "node ."
   },
-  "author": "ConSou",
+  "author": "mcavoybn",
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
     "express-graphql": "^0.11.0",
     "graphql": "^15.3.0",
+    "mysql": "^2.18.1",
     "url-search-params-polyfill": "^8.1.0"
   }
 }

@@ -1,40 +1,73 @@
 mutation createAddress {
-  createAddress(input: {
-    line1: "2815 W Pleasanton"
-    line2: "Apt B"
-    zip: "83702"
-    city: "Boise"
-    state: "ID"
-  }) {
+  createAddress(input: {line1: "2815 W Pleasanton", line2: "Apt B", zip: "83702", city: "Boise", state: "ID", employeeId: 1}) {
     id
   }
 }
 
-mutation createUser {
-  createUser(input: {
-    firstName: "Ben"
-    lastName: "McAvoy"
-    email: "mcavoybn@gmail.com"
-    phoneNumber: "2088611739"
-    role: "Software Developer"
-  }) {
+mutation createEmployee {
+  createEmployee(input: {firstName: "Ben", lastName: "McAvoy", email: "mcavoybn@gmail.com", phoneNumber: "2088611739", companyRole: "Software Developer"}) {
     id
   }
 }
 
-query retreiveAddress { getAddress( id: "0" ) {
-  line1
-  line2
-  zip
-  city
-  state
-} }
+query retreiveAddress {
+  getAddress(id: 2) {
+    line1
+    line2
+    zip
+    city
+    state
+  }
+}
 
-query retreiveUser { getUser( id: "0" ) {
-  id
-  firstName
-  lastName
-  email
-  phoneNumber
-  role
-} }
+query retreiveEmployee {
+  getEmployee(id: 0) {
+    id
+    firstName
+    lastName
+    email
+    phoneNumber
+    companyRole
+  }
+}
+
+query retreiveAllEmployees {
+  getEmployee {
+    id
+    firstName
+    email
+    phoneNumber
+    companyRole
+  }
+}
+
+query retreiveAllAddresses {
+  getAddress {
+    line1
+    line2
+    zip
+    city
+    state
+    employeeId
+  }
+}
+
+mutation updateAddress {
+  updateAddress(id: 1, input: {line1: "6355 R UnPleasanton", line2: "Ste Z", zip: "86798", city: "Los Angeles", state: "CA", employeeId: 1}) {
+    id
+  }
+}
+
+mutation updateEmployee {
+  updateEmployee(id: 1, input:{firstName: "Jeb", lastName: "McElroy", email: "mcelroyjr@gmail.com", phoneNumber: "2085553825", companyRole: "Drill Sergant"}) {
+    id
+  }
+}
+
+mutation deleteAddress {
+  deleteAddress(id: 153)
+}
+
+mutation deleteEmployee {
+  deleteEmployee(id: 1)
+}
